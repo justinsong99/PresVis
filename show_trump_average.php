@@ -1,11 +1,4 @@
-<head>
-  <title>ShowTrumpAverage</title>
-</head>
-<body>
-
-
-
-  <?php
+<?php
   // PHP code just started
 
   ini_set('error_reporting', E_ALL);
@@ -14,14 +7,15 @@
   $dbhost = 'dbase.cs.jhu.edu';
   $dbuser = '20fa_jsong69';
   $dbpass = 'Jv6g8ON4Pg';
-  $db = mysqli_connect($dbhost, $dbuser, $dbpass);
+  $dbname = '20fa_jsong69_db';
+  $con = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
   // ********* Remember to use your MySQL username and password here ********* //
 
-  if (!$db) {
+  if ($con->connect_error) {
 
-    echo "Connection failed!";
+    die("Connection failed!");
 
-  } else {
+  }
     $date_1 = $_POST['date1'];
     $date_2 = $_POST['date2'];
 
@@ -33,22 +27,17 @@
       echo "ERROR: YOU DID NOT FILL OUT THE FIELDS";
     } else if (!isset($date_2) || trim($date_2) == '') {
       echo "ERROR: YOU DID NOT FILL OUT THE FIELDS";
-    } else if ($date_1 < $date_trump_begin || $date_2 > $date_trump_end) {
-      echo "ERROR: Inputted invalid dates during Trump's presidency";
     } else {
-      mysqli_select_db($db, "20fa_jsong69_db");
-      // ********* Remember to use the name of your database here ********* //
-      $result = $db->multi_query("SELECT avg(Approve) FROM 45ApprovalRatings WHERE DAY >= '$date_1' AND DAY <= '$date_2'");
+
+      $result = $con->query("SELECT avg(Approve) FROM 45ApprovalRatings WHERE DAY >= '$date_1' AND DAY <= '$date_2'");
       // a simple query on the Rawscores table
 
       if (!$result) {
 
         echo "Query failed!\n";
-        print mysqli_error($db);
-
       } else {
 
-        if ($result = $db->store_result()) {
+        //if ($result = $db->store_result()) {
           $field = $result->fetch_fields();
           foreach($field as $val){
             $columns[] = $val->name;
@@ -61,24 +50,56 @@
             echo "</table>\n";
           } else {
             echo "<table border=1>\n";
-            echo "<tr><td>Average Approval Ratings</td></tr>\n";
+            echo "<tr><td>Average Approval Rating</td></tr>\n";
             while ($row = $result->fetch_row()) {
               printf("<tr><td>%s</td></tr>\n", $row[0]);
             }
-            echo "</table>\n";
+            echo "</table><br /><br />\n";
           }
-          $result->close();
-        }
 
+        //}
+
+        $result = $con->query("SELECT Day, Approve FROM 45ApprovalRatings WHERE Day>='$date_1' AND Day<='$date_2'");
       }
 
     }
-  }
 
   // PHP code about to end
-
   ?>
 
+  <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Trump's Approval Rating</title>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages':['corechart']});
 
+            google.charts.setOnLoadCallback(drawChart);
+            function drawChart(){
+                var data = new google.visualization.DataTable();
+                var data = google.visualization.arrayToDataTable([
+                    ['Date','Approval'],
+                    <?php
+                        while($row = $result->fetch_assoc()){
+                            echo "['".$row["Day"]."', ".$row["Approve"]."],";
+                        }
+                    ?>
+                   ]);
 
-</body>
+                var options = {
+                    title: 'Trump\'s Approval Ratings',
+                    curveType:'function' ,
+                    legend: { position: 'bottom' }
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('45arChart'));
+                chart.draw(data, options);
+            }
+
+        </script>
+    </head>
+    <body>
+         <div id="45arChart" style="width: 900px; height: 400px"></div>
+    </body>
+    </html>

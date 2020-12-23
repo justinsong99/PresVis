@@ -1,5 +1,5 @@
 <head>
-  <title>ShowElectedCandidate</title>
+  <title>Highest Unemployment Rate Since 1949</title>
 </head>
 <body>
 
@@ -23,26 +23,13 @@
 
   } else {
 
-    $year = $_POST['year'];
-
-    // This says that the $ID variable should be assigned a value obtained as an
-    // input to the PHP code. In this case, the input is called 'ID'.
-    if(!isset($year) || trim($year) == ''){
-      echo "ERROR: YOU DID NOT FILL OUT THE FIELDS";
-    } else if ($year%4 != 0 || $year>2016 || $year<1976) {
-      echo "ERROR: The inputted year was not a valid election year";
-    } else {
-      mysqli_select_db($db, "20fa_jsong69_db");
-      // ********* Remember to use the name of your database here ********* //
-
-      $result = $db->multi_query("SELECT p.state_po,p.candidate, MAX(p.candidatevotes) as Candidate_Votes FROM PresHistory as p WHERE p.year = $year GROUP BY p.state");
+    mysqli_select_db($db, "20fa_jsong69_db");
+    // ********* Remember to use the name of your database here ********* //
+    $result = $db->multi_query("SELECT * FROM unemployment WHERE UERate IN (SELECT min(UERate) FROM unemployment)");
       // a simple query on the Rawscores table
-
       if (!$result) {
-
         echo "Query failed!\n";
         print mysqli_error($db);
-
       } else {
 
         if ($result = $db->store_result()) {
@@ -58,10 +45,9 @@
             echo "</table>\n";
           } else {
             echo "<table border=1>\n";
-            echo "<tr><td>STATE</td><td>CandidateName</td><td>Candidate Votes</td></tr>\n";
+            echo "<tr><td>Year</td><td>Rate</td></tr>\n";
             while ($row = $result->fetch_row()) {
-              printf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n", $row[0],
-              $row[1], $row[2]);
+              printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[0], $row[1]);
             }
             echo "</table>\n";
           }
@@ -70,7 +56,7 @@
 
       }
 
-    }
+
   }
 
   // PHP code about to end

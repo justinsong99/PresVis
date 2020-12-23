@@ -1,5 +1,5 @@
 <head>
-  <title>ShowElectedCandidate</title>
+  <title>Show top 20% and bottom 80%</title>
 </head>
 <body>
 
@@ -23,19 +23,19 @@
 
   } else {
 
-    $year = $_POST['year'];
+    $num = $_POST['num'];
 
     // This says that the $ID variable should be assigned a value obtained as an
     // input to the PHP code. In this case, the input is called 'ID'.
-    if(!isset($year) || trim($year) == ''){
+    if(!isset($num) || trim($num) == ''){
       echo "ERROR: YOU DID NOT FILL OUT THE FIELDS";
-    } else if ($year%4 != 0 || $year>2016 || $year<1976) {
-      echo "ERROR: The inputted year was not a valid election year";
+    } else if ($num>2020 || $num<2000) {
+      echo "ERROR: The inputted count was not valid";
     } else {
       mysqli_select_db($db, "20fa_jsong69_db");
       // ********* Remember to use the name of your database here ********* //
 
-      $result = $db->multi_query("SELECT p.state_po,p.candidate, MAX(p.candidatevotes) as Candidate_Votes FROM PresHistory as p WHERE p.year = $year GROUP BY p.state");
+      $result = $db->multi_query("SELECT Year FROM (SELECT Year,Lowest_fifth+Second_Fifth+Third_Fifth+Fourth_Fifth as 80thPercentileandBelow, Highest_Fifth as Top20Percent FROM IncomeDist WHERE Year>=$num) as derived WHERE derived.Top20Percent>derived.80thPercentileandBelow");
       // a simple query on the Rawscores table
 
       if (!$result) {
@@ -58,10 +58,9 @@
             echo "</table>\n";
           } else {
             echo "<table border=1>\n";
-            echo "<tr><td>STATE</td><td>CandidateName</td><td>Candidate Votes</td></tr>\n";
+            echo "<tr><td>Year</td></tr>\n";
             while ($row = $result->fetch_row()) {
-              printf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n", $row[0],
-              $row[1], $row[2]);
+              printf("<tr><td>%s</td></tr>\n", $row[0]);
             }
             echo "</table>\n";
           }

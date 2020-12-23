@@ -1,11 +1,4 @@
-<head>
-  <title>ShowObamaAverage</title>
-</head>
-<body>
-
-
-
-  <?php
+<?php
   // PHP code just started
 
   ini_set('error_reporting', E_ALL);
@@ -14,16 +7,17 @@
   $dbhost = 'dbase.cs.jhu.edu';
   $dbuser = '20fa_jsong69';
   $dbpass = 'Jv6g8ON4Pg';
-  $db = mysqli_connect($dbhost, $dbuser, $dbpass);
-  // ********* Remember to use your MySQL username and password here ********* //
+  $dbname = '20fa_jsong69_db';
+  $con = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
 
-  if (!$db) {
+  if ($con->connect_error) {
 
-    echo "Connection failed!";
+    die("Connection failed!");
 
-  } else {
-    $date_1 = $_POST['date1'];
-    $date_2 = $_POST['date2'];
+  }
+
+  $date_1 = $_POST['date1'];
+  $date_2 = $_POST['date2'];
 
     $date_obama_begin = "2009-1-19";
     $date_obama_end = "2017-1-18";
@@ -33,22 +27,14 @@
       echo "ERROR: YOU DID NOT FILL OUT THE FIELDS";
     } else if (!isset($date_2) || trim($date_2) == '') {
       echo "ERROR: YOU DID NOT FILL OUT THE FIELDS";
-    } else if ($date_1 < $date_obama_begin || $date_2 > $date_obama_end) {
-      echo "ERROR: Inputted invalid dates during Obama's presidency";
     } else {
-      mysqli_select_db($db, "20fa_jsong69_db");
-      // ********* Remember to use the name of your database here ********* //
-      $result = $db->multi_query("SELECT avg(Approve) FROM 44ApprovalRatings WHERE DAY >= '$date_1' AND DAY <= '$date_2'");
-      // a simple query on the Rawscores table
+
+      $result = $con->query("SELECT avg(Approve) FROM 44ApprovalRatings WHERE DAY >= '$date_1' AND DAY <= '$date_2'");
 
       if (!$result) {
-
         echo "Query failed!\n";
-        print mysqli_error($db);
-
       } else {
 
-        if ($result = $db->store_result()) {
           $field = $result->fetch_fields();
           foreach($field as $val){
             $columns[] = $val->name;
@@ -67,18 +53,45 @@
             }
             echo "</table>\n";
           }
-          $result->close();
-        }
-
+          $result=$con->query("SELECT Day, Approve FROM 44ApprovalRatings WHERE Day>='$date_1' AND Day<='$date_2'");
       }
 
     }
-  }
-
   // PHP code about to end
-
   ?>
+  <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Obama's Approval Rating</title>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages':['corechart']});
 
+            google.charts.setOnLoadCallback(drawChart);
+            function drawChart(){
+                var data = new google.visualization.DataTable();
+                var data = google.visualization.arrayToDataTable([
+                    ['Date','Approval'],
+                    <?php
+                        while($row = $result->fetch_assoc()){
+                            echo "['".$row["Day"]."', ".$row["Approve"]."],";
+                        }
+                    ?>
+                   ]);
 
+                var options = {
+                    title: 'Obama\'s Approval Ratings',
+                    curveType:'function' ,
+                    legend: { position: 'bottom' }
+                };
 
-</body>
+                var chart = new google.visualization.LineChart(document.getElementById('44arChart'));
+                chart.draw(data, options);
+            }
+
+        </script>
+    </head>
+    <body>
+         <div id="44arChart" style="width: 900px; height: 400px"></div>
+    </body>
+    </html>
