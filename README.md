@@ -1,5 +1,6 @@
 # PresVis
 A databases project that involved mySQL and PHP to visualize election data (Presidential, Senate, House).
+
 Justin Song and Irfan Jamil
 Section 315 (both)
 jsong69@jhu.edu and ijamil1@jhu.edu
