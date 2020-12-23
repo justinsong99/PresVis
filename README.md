@@ -4,7 +4,6 @@ A databases project that involved mySQL and PHP to visualize election data (Pres
 Justin Song and Irfan Jamil
 Section 315 (both)
 jsong69@jhu.edu and ijamil1@jhu.edu
-Project link: https://www.ugrad.cs.jhu.edu/~jsong69/dbfinalproj.html
 
 Our application domain is political and sociological data. We explore unemployment trends, crime trends, income inequality trends while also looking at approval ratings for recent presidents. We also make a brief foray into exploring data on election results in House, Senate, and Presidential races.
 
